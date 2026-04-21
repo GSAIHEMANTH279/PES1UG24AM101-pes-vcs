@@ -9,46 +9,53 @@
 ## Phase 1: Object Storage Foundation
 
 **Screenshot 1A:** `./test_objects` output showing all tests passing.
-![Screenshot 1A](Screenshots/1a.png)
+<img width="996" height="204" alt="image" src="https://github.com/user-attachments/assets/328a56f7-1a92-4dab-b9c7-fb53c18065f0" />
+
 
 **Screenshot 1B:** `find .pes/objects -type f` showing sharded directory structure.
-![Screenshot 1B](Screenshots/1b.png)
+<img width="857" height="120" alt="image" src="https://github.com/user-attachments/assets/0fb6ecd3-727d-4dc6-a151-8d6a1f8ac18d" />
+
 
 ---
 
 ## Phase 2: Tree Objects
 
 **Screenshot 2A:** `./test_tree` output showing all tests passing.
-![Screenshot 2A](Screenshots/2a.png)
+<img width="763" height="168" alt="image" src="https://github.com/user-attachments/assets/c391b94f-ff38-4d0e-84d6-333d17fd1ff8" />
+
 
 **Screenshot 2B:** `xxd` of a raw tree object (first 20 lines).
-![Screenshot 2B](Screenshots/2b.png)
+<img width="1220" height="123" alt="image" src="https://github.com/user-attachments/assets/2242e7dd-6445-47de-9b75-7e9b63fee334" />
+
 
 ---
 
 ## Phase 3: The Index (Staging Area)
 
 **Screenshot 3A:** `pes init` → `pes add` → `pes status` sequence.
-![Screenshot 3A](Screenshots/3a.png)
+<img width="913" height="609" alt="image" src="https://github.com/user-attachments/assets/32944afa-e8a7-45cf-9841-55a965030db6" />
 
 **Screenshot 3B:** `cat .pes/index` showing the text-format index.
-![Screenshot 3B](Screenshots/3b.png)
+<img width="1051" height="122" alt="image" src="https://github.com/user-attachments/assets/7b1f0354-216f-4526-a4e9-f37306cb243d" />
 
 ---
 
 ## Phase 4: Commits and History
 
 **Screenshot 4A:** `pes log` output with three commits.
-![Screenshot 4A](Screenshots/4a.png)
+<img width="835" height="587" alt="image" src="https://github.com/user-attachments/assets/820c9e56-a64b-4a60-9044-02af132e301b" />
+
 
 **Screenshot 4B:** `find .pes -type f | sort` showing object growth.
-![Screenshot 4B](Screenshots/4b.png)
+<img width="902" height="338" alt="image" src="https://github.com/user-attachments/assets/a9ef1014-d3f0-4304-af1c-9b4e05f16828" />
+
 
 **Screenshot 4C:** `cat .pes/refs/heads/main` and `cat .pes/HEAD`.
-![Screenshot 4C](Screenshots/4c.png)
+<img width="802" height="89" alt="image" src="https://github.com/user-attachments/assets/b0794b51-a72f-4f65-836f-0d22a58a613b" />
 
 **Final Integration Test:** Full integration test (`make test-integration`).
-![Screenshot 4D](Screenshots/4d.png)
+<img width="300" height="659" alt="image" src="https://github.com/user-attachments/assets/86dedf59-5338-40f0-996a-691fcc8f5e4b" />
+
 
 ---
 
