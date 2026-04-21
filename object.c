@@ -12,30 +12,23 @@
 
 // convert hash to hex string
 void hash_to_hex(const ObjectID *id, char *hex_out) {
-
     for (int i = 0; i < HASH_SIZE; i++) {
-
         sprintf(hex_out + i * 2, "%02x", id->hash[i]);
     }
-
     hex_out[HASH_HEX_SIZE] = '\0';
 }
 
 
 // convert hex string to hash
 int hex_to_hash(const char *hex, ObjectID *id_out) {
-
     if (strlen(hex) < HASH_HEX_SIZE)
         return -1;
 
-
     for (int i = 0; i < HASH_SIZE; i++) {
-
         unsigned int byte;
 
         if (sscanf(hex + i * 2, "%2x", &byte) != 1)
             return -1;
-
 
         id_out->hash[i] = (uint8_t)byte;
     }
@@ -68,8 +61,10 @@ void object_path(const ObjectID *id, char *path_out, size_t path_size) {
 
     hash_to_hex(id, hex);
 
-
-    snprintf(path_out, path_size, "%s/%.2s/%s", OBJECTS_DIR, hex, hex + 2);
+    snprintf(path_out, path_size, "%s/%.2s/%s",
+             OBJECTS_DIR,
+             hex,
+             hex + 2);
 }
 
 
@@ -86,12 +81,15 @@ int object_exists(const ObjectID *id) {
 
 
 /////////////////////////////////////////////////////////
-//////////////////// TODO FILLED ////////////////////////
+//////////////////// PHASE 1 ////////////////////////////
 /////////////////////////////////////////////////////////
 
 
-int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out) {
-
+int object_write(ObjectType type,
+                 const void *data,
+                 size_t len,
+                 ObjectID *id_out)
+{
     const char *type_str;
 
     if (type == OBJ_BLOB)
@@ -107,10 +105,15 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
         return -1;
 
 
-    // header
+    // build header  e.g. "blob 16\0"
     char header[64];
 
-    int header_len = snprintf(header, sizeof(header), "%s %zu", type_str, len) + 1;
+    int header_len =
+        snprintf(header,
+                 sizeof(header),
+                 "%s %zu",
+                 type_str,
+                 len) + 1;
 
 
     // combine header + data
@@ -127,11 +130,11 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
     memcpy(full + header_len, data, len);
 
 
-    // hash
+    // compute hash
     compute_hash(full, total, id_out);
 
 
-    // deduplication
+    // deduplicate
     if (object_exists(id_out)) {
 
         free(full);
@@ -147,7 +150,9 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
     char tmp_path[520];
 
 
-    object_path(id_out, path, sizeof(path));
+    object_path(id_out,
+                path,
+                sizeof(path));
 
 
     char hex[HASH_HEX_SIZE + 1];
@@ -155,17 +160,27 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
     hash_to_hex(id_out, hex);
 
 
-    // create directory
-    snprintf(dir, sizeof(dir), "%s/%.2s", OBJECTS_DIR, hex);
+    // create directory shard
+    snprintf(dir,
+             sizeof(dir),
+             "%s/%.2s",
+             OBJECTS_DIR,
+             hex);
 
     mkdir(dir, 0755);
 
 
-    // temp file
-    snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", path);
+    // temporary file
+    snprintf(tmp_path,
+             sizeof(tmp_path),
+             "%s.tmp",
+             path);
 
 
-    int fd = open(tmp_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    int fd =
+        open(tmp_path,
+             O_CREAT | O_WRONLY | O_TRUNC,
+             0644);
 
 
     if (fd < 0) {
@@ -183,11 +198,10 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
 
     close(fd);
 
-
     free(full);
 
 
-    // rename temp -> final
+    // atomic rename
     if (rename(tmp_path, path) != 0)
 
         return -1;
@@ -195,7 +209,6 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
 
     // fsync directory
     int dir_fd = open(dir, O_RDONLY);
-
 
     if (dir_fd >= 0) {
 
@@ -210,23 +223,25 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
 
 
 
-
-int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_t *len_out) {
-
+int object_read(const ObjectID *id,
+                ObjectType *type_out,
+                void **data_out,
+                size_t *len_out)
+{
     char path[512];
 
-
-    object_path(id, path, sizeof(path));
+    object_path(id,
+                path,
+                sizeof(path));
 
 
     FILE *f = fopen(path, "rb");
-
 
     if (!f)
         return -1;
 
 
-    // get file size
+    // file size
     fseek(f, 0, SEEK_END);
 
     size_t total = ftell(f);
@@ -235,7 +250,6 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
 
 
     uint8_t *buf = malloc(total);
-
 
     if (!buf) {
 
@@ -253,20 +267,24 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
     // verify hash
     ObjectID computed;
 
-    compute_hash(buf, total, &computed);
+    compute_hash(buf,
+                 total,
+                 &computed);
 
 
-    if (memcmp(computed.hash, id->hash, HASH_SIZE) != 0) {
-
+    if (memcmp(computed.hash,
+               id->hash,
+               HASH_SIZE) != 0)
+    {
         free(buf);
 
         return -1;
     }
 
 
-    // find NULL separator
-    uint8_t *null_pos = memchr(buf, '\0', total);
-
+    // find header separator
+    uint8_t *null_pos =
+        memchr(buf, '\0', total);
 
     if (!null_pos) {
 
@@ -276,21 +294,18 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
     }
 
 
-    // detect type
+    // detect object type
     if (strncmp((char*)buf, "blob ", 5) == 0)
 
         *type_out = OBJ_BLOB;
-
 
     else if (strncmp((char*)buf, "tree ", 5) == 0)
 
         *type_out = OBJ_TREE;
 
-
     else if (strncmp((char*)buf, "commit ", 7) == 0)
 
         *type_out = OBJ_COMMIT;
-
 
     else {
 
@@ -300,14 +315,17 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
     }
 
 
-    // extract data
-    uint8_t *data_start = null_pos + 1;
+    // extract data part
+    uint8_t *data_start =
+        null_pos + 1;
 
 
-    *len_out = total - (data_start - buf);
+    *len_out =
+        total - (data_start - buf);
 
 
-    *data_out = malloc(*len_out);
+    *data_out =
+        malloc(*len_out);
 
 
     if (!*data_out) {
@@ -318,12 +336,12 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
     }
 
 
-    memcpy(*data_out, data_start, *len_out);
+    memcpy(*data_out,
+           data_start,
+           *len_out);
 
 
     free(buf);
 
-
     return 0;
 }
-// implemented object_read
